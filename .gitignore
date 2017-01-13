@@ -1,0 +1,16 @@
+js/.tmp
+js/.sass-cache
+js/.publish
+js/coverage/
+js/dist/
+js/node_modules/
+js/reports/
+js/webpack.stats.json
+js/test/
+
+.venv
+.idea
+npm-debug.log
+db.sqlite3
+**/__pycache__
+
