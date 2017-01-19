@@ -5,6 +5,7 @@
  * @module API
  */
 import { XHR, CSRF_HEADER_KEY } from 'constants/api';
+import cookie from 'cookie';
 
 /**
  * Fetch data outside the FSA flow
@@ -29,8 +30,13 @@ export default function request(action:Object = {}) {
     errors.push('endpoint');
   }
 
-  if (!action.payload && (action.method !== 'GET' && action.method !== 'DELETE')) {
-    errors.push('payload');
+  if (errors.length) {
+    throw new Error(`Error! You must pass \`${errors.join('`, `')}\``);
+  }
+
+  let payload = action.payload;
+  if (!payload && (action.method !== 'GET' && action.method !== 'DELETE')) {
+    payload = {};
   }
 
   const headers = Object.assign({}, {
@@ -39,14 +45,8 @@ export default function request(action:Object = {}) {
   }, action.headers);
 
   if (['POST', 'PUT'].indexOf(action.method) >= 0) {
-    if (!action.csrfToken)
-      errors.push('csrfToken');
-    else
-      headers[CSRF_HEADER_KEY] = action.csrfToken
-  }
-
-  if (errors.length) {
-    throw new Error(`Error! You must pass \`${errors.join('`, `')}\``);
+    const cookiesObj = cookie.parse(document.cookie);
+    headers[CSRF_HEADER_KEY] = cookiesObj.csrftoken;
   }
 
   return new Promise((resolve, reject) => {
@@ -56,7 +56,7 @@ export default function request(action:Object = {}) {
     };
 
     if (params.method !== 'GET') {
-      params.body = JSON.stringify(action.payload);
+      params.body = JSON.stringify(payload);
     }
 
     const endpoint = basePath + action.endpoint;

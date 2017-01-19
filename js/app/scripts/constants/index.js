@@ -16,9 +16,23 @@ export const ActionTypes = keyMirror({
   USER_LOGOUT_REQUEST: undefined,
   USER_LOGOUT_SUCCESS: undefined,
   USER_LOGOUT_FAILURE: undefined,
+
   SHOW_ALERT: undefined,
   HIDE_ALERT: undefined,
-  PUT_CSRF_TOKEN: undefined
+
+  GET_INITIAL_DATA: undefined,
+  PUSH_INITIAL_DATA: undefined,
+
+  GET_MODEL_LIST_DATA: undefined,
+  PUSH_MODEL_LIST_DATA: undefined,
+
+  GET_MODEL_LIST_METADATA: undefined,
+  PUSH_MODEL_LIST_METADATA: undefined,
+
+  SAVE_NEW_OBJECT: undefined,
+  SAVE_OBJECT: undefined,
+
+  ERROR: undefined,
 });
 
 

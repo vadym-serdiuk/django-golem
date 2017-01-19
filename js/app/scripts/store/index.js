@@ -12,10 +12,10 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test') {
 const store = configStore();
 
 /* istanbul ignore if  */
-if (process.env.NODE_ENV !== 'test') {
-  persistStore(store, {
-    whitelist: ['app', 'user']
-  });
-}
+// if (process.env.NODE_ENV !== 'test') {
+//   persistStore(store, {
+//     whitelist: ['app', 'user']
+//   });
+// }
 
 export default store;

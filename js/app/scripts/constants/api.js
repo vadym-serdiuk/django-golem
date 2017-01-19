@@ -6,7 +6,9 @@ export const XHR = keyMirror({
 });
 
 export const ENDPOINTS = {
-  login: 'api/login/'
+  login: 'api/login/',
+  logout: 'api/logout/',
+  initialData: 'api/initial-data/'
 };
 
 export const CSRF_HEADER_KEY = 'X-CSRFToken';

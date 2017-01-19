@@ -9,11 +9,7 @@ import scroll from 'scroll';
 import scrollDoc from 'scroll-doc';
 import ease from 'ease-component';
 
-import { goTo, logOut } from 'actions';
-import store from 'store';
-
 const page = scrollDoc();
-const { dispatch, getState, subscribe } = store;
 
 /**
  * Scroll to the top before navigate
@@ -28,48 +24,12 @@ export function scrollBefore(nextState, transition, callback) {
 }
 
 /**
- * Navigate
- * @param {Object} nextState
- * @param {Object} transition
- * @param {function} callback
- *
- * @returns {function}
- */
-function navigate(nextState, transition, callback) {
-  const pathname = nextState.location.pathname;
-  const { user } = getState();
-
-  if (!user.logged) {
-    if (pathname !== `${basePath}login/` && pathname !== `${basePath}/logout`) {
-      const nextURI = pathname + encodeURIComponent(nextState.location.search);
-      return dispatch(goTo(`${basePath}login/`, {query: {next: nextURI}}));
-    } else {
-      return scrollBefore(nextState, transition, callback);
-    }
-  } else {
-    return scrollBefore(nextState, transition, callback);
-  }
-
-}
-
-/**
  * Check user status and redirect if not authorized
  * @param {Object} nextState
  * @param {Object} transition
  * @param {function} callback
  *
  */
-export function checkStatus(nextState, transition, callback) {
-  if (getState().user.rehydrated) {
-    navigate(nextState, transition, callback);
-    return;
-  }
-
-  const unsubscribe = subscribe(() => {
-    /* istanbul ignore else  */
-    if (getState().user.rehydrated) {
-      unsubscribe();
-      navigate(nextState, transition, callback);
-    }
-  });
+export function routeLocationDidUpdate(nextState, transition, callback) {
+  return scrollBefore(nextState, transition, callback);
 }

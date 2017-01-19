@@ -2,7 +2,10 @@ import json
 from functools import update_wrapper
 
 from django.contrib import admin
+from django.contrib.auth import login, logout
 from django.core.exceptions import PermissionDenied
+from django.forms import model_to_dict
+from django.http import HttpResponseNotAllowed
 from django.http import JsonResponse
 from django.template.response import TemplateResponse
 from django.utils.encoding import force_text
@@ -58,6 +61,10 @@ def get_viewset_class(model, model_admin):
 
 class AdminSite(admin.AdminSite):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model_urls = {}
+
     def get_urls(self):
         from django.conf.urls import url, include
         # Since this module gets imported in the application's root package,
@@ -85,9 +92,12 @@ class AdminSite(admin.AdminSite):
         # Add each model's viewset, and create a list of valid URLS
         admin_api_router = DefaultRouter()
         for model, model_admin in admin.site._registry.items():
-            path = r'{}/{}'.format(model._meta.app_label, model._meta.model_name)
+            info = (model._meta.app_label, model._meta.model_name)
+            path = r'{}/{}'.format(*info)
+            model_id = '{}:{}'.format(*info)
             viewset = get_viewset_class(model, model_admin)
             admin_api_router.register(path, viewset)
+            # self.model_urls[model_id] = pa
         urlpatterns += [
             url(r'^api/', include(admin_api_router.urls, namespace='admin_api')),
         ]
@@ -114,10 +124,48 @@ class AdminSite(admin.AdminSite):
         return TemplateResponse(request, self.index_template or 'admin/index.html', context)
 
     def login(self, request):
-        return JsonResponse({'token': '9989898joo'})
+        if request.method != 'POST':
+            raise HttpResponseNotAllowed(['POST'])
+
+        if request.user.is_authenticated():
+            return JsonResponse({'status': 'Already logged in'})
+
+        form_data = json.loads(request.body.decode())
+
+        from django.contrib.auth.forms import AuthenticationForm
+        form = AuthenticationForm(request, data=form_data)
+        if form.is_valid():
+            login(request, form.get_user())
+            return JsonResponse({'status': 'OK'})
+        else:
+            return JsonResponse({'status': 'Error',
+                                 'error': 'Username or password not valid'},
+                                status=400,
+                                reason='Validation error')
+
+    def logout(self, request):
+        if request.method != 'POST':
+            raise HttpResponseNotAllowed(['POST'])
+
+        if request.user.is_authenticated():
+            logout(request)
+            return JsonResponse({'status': 'OK'})
+        else:
+            return JsonResponse({'status': 'User is not authenticated'})
 
     def initial_data(self, request):
-        return JsonResponse(self.get_app_list(request))
+        if request.method == 'GET':
+            user = {'authenticated': False,
+                    'appList': []}
+            if request.user.is_authenticated():
+                user = model_to_dict(request.user, exclude=['groups', 'user_permissions', 'password', 'last_login', 'date_joined'])
+                user['authenticated'] = True
+
+            data = {'user': user,
+                    'appList': self._build_app_dict(request)}
+            return JsonResponse(data)
+        else:
+            raise HttpResponseNotAllowed(['GET'])
 
     def _build_app_dict(self, request, label=None):
         """
@@ -128,11 +176,11 @@ class AdminSite(admin.AdminSite):
 
         if label:
             models = {
-                m: m_a for m, m_a in self._registry.items()
+                m: m_a for m, m_a in admin.site._registry.items()
                 if m._meta.app_label == label
             }
         else:
-            models = self._registry
+            models = admin.site._registry
 
         for model, model_admin in models.items():
             app_label = model._meta.app_label
@@ -152,14 +200,15 @@ class AdminSite(admin.AdminSite):
 
             info = (app_label, model._meta.model_name)
             model_dict = {
+                'id': '{}:{}'.format(*info),
                 'name': capfirst(model._meta.verbose_name_plural),
                 'object_name': model._meta.object_name,
                 'perms': perms,
             }
             if perms.get('change'):
-                model_dict['admin_url'] = 'admin/%s/%s_changelist' % info
+                model_dict['admin_url'] = '%s/%s/' % info
             if perms.get('add'):
-                model_dict['add_url'] = 'admin/%s/%s_add' % info
+                model_dict['add_url'] = '%s/%s/add' % info
 
             if app_label in app_dict:
                 app_dict[app_label]['models'].append(model_dict)
@@ -167,7 +216,7 @@ class AdminSite(admin.AdminSite):
                 app_dict[app_label] = {
                     'name': apps.get_app_config(app_label).verbose_name,
                     'app_label': app_label,
-                    'app_url': 'admin/%s' % app_label,
+                    'app_url': '%s/' % app_label,
                     'has_module_perms': has_module_perms,
                     'models': [model_dict],
                 }

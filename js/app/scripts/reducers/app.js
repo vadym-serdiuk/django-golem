@@ -1,49 +1,43 @@
-import { REHYDRATE } from 'redux-persist/constants';
 import { createReducer } from 'utils/helpers';
-
 import { ActionTypes } from 'constants/index';
+import { LOCATION_CHANGE } from 'react-router-redux'
 
-export const appState = {
-  notifications: {
-    visible: false,
-    message: '',
-    status: '',
-    withTimeout: true
-  },
-  rehydrated: false,
-  CSRFToken: ''
+export const initialState = {
+  notifications: {}
 };
 
 export default {
-  app: createReducer(appState, {
-    [REHYDRATE](state, action) {
-      return Object.assign({}, state, action.payload.app, {
-        notifications: appState.notifications,
-        rehydrated: true
-      });
-    },
+  app: createReducer(initialState, {
     [ActionTypes.SHOW_ALERT](state, action) {
+      const id = Math.random() * 10000000;
       const notifications = {
         ...state.notifications,
-        visible: true,
-        message: action.message,
-        status: action.status,
-        withTimeout: action.withTimeout === true
+        [id]: {
+          visible: true,
+          message: action.message,
+          type: action.type,
+          withTimeout: action.withTimeout === true
+        }
       };
 
       return { ...state, notifications };
     },
-    [ActionTypes.HIDE_ALERT](state) {
+    [ActionTypes.HIDE_ALERT](state, action) {
       const notifications = {
         ...state.notifications,
-        visible: false,
-        withTimeout: true
+        [action.id]: {
+          visible: false,
+        }
       };
 
       return { ...state, notifications };
     },
-    [ActionTypes.PUT_CSRF_TOKEN](state, action) {
-      return { ...state, CSRFToken: action.token}
-    }
+    [LOCATION_CHANGE](state, params) {
+      console.log(params);
+      return state;
+    },
+    [ActionTypes.USER_LOGOUT_SUCCESS]() {
+      return initialState;
+    },
   })
 };

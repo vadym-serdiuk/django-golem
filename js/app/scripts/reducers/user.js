@@ -4,22 +4,20 @@ import { createReducer } from 'utils/helpers';
 import { ActionTypes } from 'constants/index';
 
 export const userState = {
-  logged: false,
-  rehydrated: false
+  authenticated: null
 };
 
 export default {
   user: createReducer(userState, {
-    [REHYDRATE](state, action) {
-      return Object.assign({}, state, action.payload.user, {
-        rehydrated: true
-      });
+    [ActionTypes.USER_LOGOUT_SUCCESS]() {
+      return {authenticated: false}
     },
-    [ActionTypes.USER_LOGIN_SUCCESS](state) {
-      return { ...state, logged: true };
-    },
-    [ActionTypes.USER_LOGOUT_SUCCESS](state) {
-      return { ...state, logged: false };
+    [ActionTypes.PUSH_INITIAL_DATA](state, action) {
+      if (action.payload.user.authenticated) {
+        return {...state, ...action.payload.user};
+      }
+      else
+        return {authenticated: false};
     }
   })
 };

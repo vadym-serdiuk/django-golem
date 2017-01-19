@@ -14,6 +14,9 @@ import { syncHistoryWithStore } from 'react-router-redux';
 import store from 'store';
 import '../styles/main.scss';
 
+import injectTapEventPlugin from "react-tap-event-plugin";
+injectTapEventPlugin();
+
 function renderApp(RootComponent) {
   const target = document.getElementById('main');
 

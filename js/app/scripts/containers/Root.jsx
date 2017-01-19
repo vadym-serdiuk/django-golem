@@ -3,8 +3,7 @@ import React from 'react';
 import { Provider, connect } from 'react-redux';
 import { Router } from 'react-router';
 import createRoutes from 'routes';
-import cookie from 'cookie';
-import { putCsrfToken } from 'actions/app'
+import { ActionTypes } from 'constants/index'
 
 const routes = createRoutes();
 
@@ -16,14 +15,13 @@ class Root extends React.Component {
   };
 
   componentDidMount = () => {
-    const cookiesObj = cookie.parse(document.cookie);
-    const CSRFToken = cookiesObj.csrftoken;
-    this.props.dispatch(putCsrfToken(CSRFToken));
+    this.props.dispatch({type: ActionTypes.GET_INITIAL_DATA});
   };
 
   /* istanbul ignore next */
   render() {
     const { store, history } = this.props;
+
     return (
       <Provider store={store}>
         <Router history={history} routes={routes} />
