@@ -10,12 +10,13 @@ import { ActionTypes } from 'constants/index';
  *
  * @returns {Object}
  */
-export function login({username, password}) {
+export function login({username, password}, next) {
   return {
     type: ActionTypes.USER_LOGIN_REQUEST,
     payload: {
       username, password
-    }
+    },
+    next
   };
 }
 

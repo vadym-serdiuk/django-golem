@@ -26,7 +26,7 @@ export class Login extends React.Component {
   onClickLogin(e) {
     e.preventDefault();
 
-    this.props.dispatch(login(this.state));
+    this.props.dispatch(login(this.state, this.props.location.query.next));
   }
 
   @autobind

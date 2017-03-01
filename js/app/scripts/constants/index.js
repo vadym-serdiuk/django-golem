@@ -32,6 +32,9 @@ export const ActionTypes = keyMirror({
   SAVE_NEW_OBJECT: undefined,
   SAVE_OBJECT: undefined,
 
+  OPEN_SIDEBAR_MENU: undefined,
+  CLOSE_SIDEBAR_MENU: undefined,
+
   ERROR: undefined,
 });
 

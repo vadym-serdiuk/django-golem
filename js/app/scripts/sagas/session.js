@@ -23,11 +23,14 @@ export function* login(action) {
     };
     yield call(request, options);
 
-    yield put({
-      type: ActionTypes.GET_INITIAL_DATA
-    });
+    let url = basePath;
+    if (action.next)
+      url = action.next;
 
-    yield put(goTo(basePath));
+    yield put({
+      type: ActionTypes.GET_INITIAL_DATA,
+      callbackAction: goTo(url)
+    });
 
   } catch (err) {
     /* istanbul ignore next */

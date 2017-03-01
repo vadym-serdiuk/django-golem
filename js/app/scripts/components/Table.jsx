@@ -1,23 +1,34 @@
 import React from 'react';
-import { Table as MuiTable, TableBody, TableFooter, TableHeader,
+import { Table as MuiTable, TableBody, TableHeader,
          TableHeaderColumn, TableRow, TableRowColumn }
   from 'material-ui/Table';
+import { autobind } from "core-decorators";
 
 class Table extends React.Component {
-  render() {
-    const {fields, data} = this.props;
 
-    const columns = _.map(fields, (fieldObj, fieldName) => {
-      return <TableHeaderColumn key={fieldName}>{fieldObj.label}</TableHeaderColumn>;
-    });
+  @autobind
+  onCellClick = (row, col) => {
+    if (col > 0)
+      this.props.onRowClick(this.props.data[row].pk);
+  };
+
+  render() {
+    const {listFields, data} = this.props;
+
+    const columns = _.map(
+      listFields,
+      (fieldObj) => {
+        return <TableHeaderColumn key={fieldObj.name}>{fieldObj.label}</TableHeaderColumn>;
+      }
+    );
 
     const rows = _.map(data, (row) => {
-
-      const cells = _.map(fields, (fieldObj, fieldName) => {
-        return <TableRowColumn key={fieldName}>{row[fieldName].toString()}</TableRowColumn>
+      const cells = _.map(listFields, (fieldObj) => {
+        const fieldName = fieldObj.name;
+        return <TableRowColumn key={fieldName}>{(row[fieldName] || '').toString()}</TableRowColumn>
       });
 
-      return (<TableRow key={row.id}>
+      return (<TableRow key={row.pk}>
         {cells}
       </TableRow>);
 
@@ -28,6 +39,7 @@ class Table extends React.Component {
         fixedHeader={true}
         selectable={true}
         multiSelectable={true}
+        onCellClick={this.onCellClick}
       >
         <TableHeader
           displaySelectAll={true}
@@ -52,8 +64,14 @@ class Table extends React.Component {
 }
 
 Table.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  data: React.PropTypes.array.isRequired,
+  listFields: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      type: React.PropTypes.string.isRequired,
+  })).isRequired,
+  data: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  onRowClick: React.PropTypes.func,
 };
 
 export default Table;

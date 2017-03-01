@@ -14,13 +14,13 @@ export default {
     [ActionTypes.PUSH_MODEL_LIST_DATA](state, action) {
 
       const payload = [...action.payload];
-      _.each(payload, (row) => {
-        _.each(_.keys(row), (field) => {
-          let value = row[field];
-          if (time_re.test(value))
-            row[field] = new Date(value);
-        });
-      });
+      // _.each(payload, (row) => {
+      //   _.each(_.keys(row), (field) => {
+      //     let value = row[field];
+      //     if (time_re.test(value))
+      //       row[field] = new Date(value);
+      //   });
+      // });
 
       const data = {...state.data, [action.modelId]: payload};
       return { ...state, data};
@@ -30,7 +30,8 @@ export default {
         ...state.meta,
         [action.modelId]: {
           ...state.meta[action.modelId],
-          fields: action.payload.actions.POST
+          fields: action.payload.fields,
+          listFields: action.payload.list_fields,
         }
       };
       return { ...state, meta};
@@ -46,7 +47,8 @@ export default {
             perms: model.perms,
             listUrl: model.admin_url,
             addUrl: model.add_url,
-            fields: {}
+            fields: [],
+            listFields: []
           };
         })
       });

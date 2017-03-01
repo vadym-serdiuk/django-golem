@@ -14,24 +14,32 @@ import { ENDPOINTS } from 'constants/api';
 import request from 'utils/api';
 
 
-export function* getInitialData() {
+export function* getInitialData(action) {
   try {
 
     const options = {
       endpoint: ENDPOINTS.initialData,
       method: 'GET'
     };
+
     const response = yield call(request, options);
     if (response.user.authenticated)
       yield put({
         type: ActionTypes.PUSH_INITIAL_DATA,
         payload: response
       });
-    else
+    else {
       yield put({
         type: ActionTypes.USER_LOGIN_FAILURE,
-        payload: err
+        payload: 'Session inactive'
       });
+
+      if (action.authErrorAction)
+        yield put(action.authErrorAction);
+    }
+
+    if (action.callbackAction)
+      yield put(action.callbackAction);
 
   } catch (err) {
     /* istanbul ignore next */

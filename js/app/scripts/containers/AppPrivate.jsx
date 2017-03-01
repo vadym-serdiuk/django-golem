@@ -3,18 +3,15 @@ import AppBar from 'material-ui/AppBar';
 import AppMenu from 'containers/Menu/AppMenu';
 
 import { connect } from 'react-redux';
+import { autobind } from 'core-decorators';
 
 import SystemNotifications from 'components/SystemNotifications';
-import { goTo } from 'actions/app'
+import { goTo, openSidebarMenu } from 'actions/app';
 
 export class AppPrivate extends React.Component {
 
   constructor(props) {
     super(props);
-
-    this.state = {
-      drawerOpen: true
-    }
   };
 
   componentWillMount = () => {
@@ -36,17 +33,24 @@ export class AppPrivate extends React.Component {
     }
   };
 
+  @autobind
+  onAppBarLeftButtonClick = () => {
+    return this.props.dispatch(openSidebarMenu());
+  };
+
   render() {
-    const { dispatch, user } = this.props;
-    if (this.props.user.authenticated === null)
+    const { user } = this.props;
+    if (user.authenticated === null)
       return null;
 
     return (
       <div key="app" className="app app--private">
-        <AppMenu open={this.state.drawerOpen} />
-        <main className="app__main" style={{paddingLeft: '260px'}}>
+        <AppMenu />
+        <main className="app__main">
           <AppBar title="Django Admin"
-                  iconClassNameRight="muidocs-icon-navigation-expand-more" />
+                  iconClassNameRight="muidocs-icon-navigation-expand-more"
+                  onLeftIconButtonTouchTap={this.onAppBarLeftButtonClick}
+          />
           {this.props.children}
         </main>
         <SystemNotifications />

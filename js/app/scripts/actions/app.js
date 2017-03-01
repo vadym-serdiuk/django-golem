@@ -63,3 +63,17 @@ export function putCsrfToken(token) {
     token
   };
 }
+
+
+export function openSidebarMenu() {
+  return {
+    type: ActionTypes.OPEN_SIDEBAR_MENU
+  }
+}
+
+
+export function closeSidebarMenu() {
+  return {
+    type: ActionTypes.CLOSE_SIDEBAR_MENU
+  }
+}

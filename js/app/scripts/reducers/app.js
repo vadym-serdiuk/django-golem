@@ -3,7 +3,8 @@ import { ActionTypes } from 'constants/index';
 import { LOCATION_CHANGE } from 'react-router-redux'
 
 export const initialState = {
-  notifications: {}
+  notifications: {},
+  isSidebarOpened: false,
 };
 
 export default {
@@ -32,10 +33,20 @@ export default {
 
       return { ...state, notifications };
     },
+
     [LOCATION_CHANGE](state, params) {
       console.log(params);
       return state;
     },
+
+    [ActionTypes.OPEN_SIDEBAR_MENU](state) {
+      return {...state, isSidebarOpened: true};
+    },
+
+    [ActionTypes.CLOSE_SIDEBAR_MENU](state) {
+      return {...state, isSidebarOpened: false};
+    },
+
     [ActionTypes.USER_LOGOUT_SUCCESS]() {
       return initialState;
     },

@@ -1,15 +1,21 @@
 import json
+import warnings
+from collections import OrderedDict
 from functools import update_wrapper
 
 from django.contrib import admin
+from django.contrib.admin.utils import lookup_field, display_for_value, display_for_field
 from django.contrib.auth import login, logout
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.db import models
 from django.forms import model_to_dict
 from django.http import HttpResponseNotAllowed
 from django.http import JsonResponse
 from django.template.response import TemplateResponse
+from django.utils.deprecation import RemovedInDjango20Warning
 from django.utils.encoding import force_text
 from django.utils.functional import Promise
+from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.apps import apps
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -17,10 +23,49 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.serializers import ModelSerializer
 from rest_framework.viewsets import ModelViewSet
 
+from golem.meta import AdminMetaData
+
 
 def json_apps_serializer(obj):
     if isinstance(obj, Promise):
         return force_text(obj)
+
+
+class ModelListSerializer(ModelSerializer):
+    def to_representation(self, instance):
+        result = OrderedDict()
+        for field_name in self.Meta.list_display + ('pk', ):
+            try:
+                f, attr, value = lookup_field(field_name, instance, self.Meta.model_admin)
+            except ObjectDoesNotExist:
+                result_repr = None
+            else:
+                empty_value_display = None
+                if f is None or f.auto_created:
+                    allow_tags = getattr(attr, 'allow_tags', False)
+                    boolean = getattr(attr, 'boolean', False)
+                    result_repr = display_for_value(value, empty_value_display, boolean)
+                    if allow_tags:
+                        warnings.warn(
+                            "Deprecated allow_tags attribute used on field {}. "
+                            "Use django.utils.html.format_html(), format_html_join(), "
+                            "or django.utils.safestring.mark_safe() instead.".format(field_name),
+                            RemovedInDjango20Warning
+                        )
+                        result_repr = mark_safe(result_repr)
+                else:
+                    if isinstance(f.remote_field, models.ManyToOneRel):
+                        field_val = getattr(instance, f.name)
+                        if field_val is None:
+                            result_repr = empty_value_display
+                        else:
+                            result_repr = field_val
+                    else:
+                        result_repr = display_for_field(value, f, empty_value_display)
+            if force_text(result_repr) == '':
+                result_repr = mark_safe('&nbsp;')
+            result[field_name] = result_repr
+        return result
 
 
 def get_serializer_class_func(model, model_admin):
@@ -34,14 +79,20 @@ def get_serializer_class_func(model, model_admin):
         read_only_fields = model_admin.get_readonly_fields(self.request)
 
         serializers_meta_class = type('Meta', (), {'model': model,
+                                                   'model_admin': model_admin,
+                                                   'list_display': model_admin.get_list_display(self.request),
                                                    'fields': fields,
                                                    'read_only_fields': read_only_fields})
         class_name = '{}{}AdminSerializer'.format(capfirst(model._meta.app_label),
                                                   capfirst(model._meta.verbose_name_plural))
 
+        if self.action == 'list':
+            base_serializer_class = ModelListSerializer
+        else:
+            base_serializer_class = ModelSerializer
         serializer_class = type(
             class_name,
-            (ModelSerializer,),
+            (base_serializer_class,),
             {'Meta': serializers_meta_class}
         )
         return serializer_class
@@ -53,7 +104,10 @@ def get_viewset_class(model, model_admin):
                                            capfirst(model._meta.verbose_name_plural))
     class_attrs = {
         'queryset': model.objects.all(),
-        'get_serializer_class': get_serializer_class_func(model, model_admin)
+        'get_serializer_class': get_serializer_class_func(model, model_admin),
+        'metadata_class': AdminMetaData,
+        'model_admin': model_admin,
+        'model': model
     }
     viewset_class = type(class_name, (ModelViewSet,), class_attrs)
     return viewset_class
