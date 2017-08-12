@@ -1,10 +1,9 @@
 import React from 'react';
 import Paper from 'material-ui/Paper';
-import Subheader from 'material-ui/Subheader';
 import Table from 'components/Table';
 import { connect } from 'react-redux';
 import { autobind } from 'core-decorators';
-import { getModelListData, getModelListMetaData } from 'actions/api';
+import { getModelListData, getModelMetaData } from 'actions/api';
 import Pagination from 'components/Pagination';
 import { goTo } from 'actions/app';
 
@@ -28,7 +27,7 @@ class ModelListView extends React.Component {
 
   requestModel({meta, modelId}) {
     const apiPath = `api/${meta.listUrl}`;
-    this.props.dispatch(getModelListMetaData(apiPath, modelId));
+    this.props.dispatch(getModelMetaData(apiPath, modelId));
     this.props.dispatch(getModelListData(apiPath, modelId))
   }
 
@@ -62,7 +61,7 @@ class ModelListView extends React.Component {
       const pageData = data.slice(startPosition, endPosition);
 
       return (<Paper style={paperStyles}>
-        <Subheader>{modelTitle}</Subheader>
+        <h1>{modelTitle}</h1>
         <Table
           listFields={meta.listFields}
           data={pageData}
@@ -93,7 +92,7 @@ function mapStateToProps(state, ownProps) {
     app,
     model,
     modelId,
-    data: state.api.data[modelId] || [],
+    data: state.api.listData[modelId] || [],
     meta: state.api.meta[modelId] || {}
   }
 }

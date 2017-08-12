@@ -6,7 +6,7 @@
  */
 
 import { takeEvery } from 'redux-saga';
-import { put, call, fork } from 'redux-saga/effects';
+import { all, put, call } from 'redux-saga/effects';
 
 import { goTo } from 'actions';
 import { ActionTypes } from 'constants/index';
@@ -55,7 +55,7 @@ export function* getInitialData(action) {
 }
 
 
-export function* getListMetaData({path, modelId}) {
+export function* getModelMetaData({path, modelId}) {
   try {
 
     const options = {
@@ -64,7 +64,7 @@ export function* getListMetaData({path, modelId}) {
     };
     const response = yield call(request, options);
     yield put({
-      type: ActionTypes.PUSH_MODEL_LIST_METADATA,
+      type: ActionTypes.PUSH_MODEL_METADATA,
       payload: response,
       modelId
     });
@@ -111,18 +111,63 @@ export function* getListData({path, modelId}) {
 }
 
 
-function* watchGetListMetaData() {
-  yield* takeEvery(ActionTypes.GET_MODEL_LIST_METADATA, getListMetaData);
+export function* getObjectData({path, modelId, objectId}) {
+  try {
+
+    const options = {
+      endpoint: path,
+      method: 'GET'
+    };
+    const response = yield call(request, options);
+    yield put({
+      type: ActionTypes.PUSH_MODEL_OBJECT_DATA,
+      payload: response,
+      modelId,
+      objectId,
+    });
+
+  } catch (err) {
+    /* istanbul ignore next */
+    yield put({
+      type: ActionTypes.SHOW_ALERT,
+      payload: {
+        message: err,
+        type: 'error',
+        withTimeout: true
+      }
+    });
+  }
 }
 
 
-function* watchGetListData() {
-  yield* takeEvery(ActionTypes.GET_MODEL_LIST_DATA, getListData);
-}
+export function* saveObject({path, modelId, objectId, data}) {
+  try {
 
+    const options = {
+      endpoint: path,
+      method: 'PATCH',
+      payload: data,
+      contentType: 'multipart/form-data',
+    };
+    const response = yield call(request, options);
+    yield put({
+      type: ActionTypes.PUSH_MODEL_OBJECT_DATA,
+      payload: response,
+      modelId,
+      objectId,
+    });
 
-function* watchGetInitialData() {
-  yield* takeEvery(ActionTypes.GET_INITIAL_DATA, getInitialData);
+  } catch (err) {
+    /* istanbul ignore next */
+    yield put({
+      type: ActionTypes.SHOW_ALERT,
+      payload: {
+        message: err,
+        type: 'error',
+        withTimeout: true
+      }
+    });
+  }
 }
 
 
@@ -130,9 +175,11 @@ function* watchGetInitialData() {
  * API Sagas
  */
 export default function* api() {
-  yield [
-    fork(watchGetListMetaData),
-    fork(watchGetListData),
-    fork(watchGetInitialData)
-  ];
+  yield all([
+    takeEvery(ActionTypes.GET_MODEL_METADATA, getModelMetaData),
+    takeEvery(ActionTypes.GET_MODEL_LIST_DATA, getListData),
+    takeEvery(ActionTypes.GET_MODEL_OBJECT_DATA, getObjectData),
+    takeEvery(ActionTypes.GET_INITIAL_DATA, getInitialData),
+    takeEvery(ActionTypes.SAVE_OBJECT, saveObject)
+  ]);
 }

@@ -67,8 +67,8 @@ class Pagination extends React.Component {
 		pages: [],
 	};
 
-	constructor(props) {
-		super(props);
+	constructor() {
+		super();
 
 		this.handleChangePerPage = this.handleChangePerPage.bind(this);
 		this.handleChangePage = this.handleChangePage.bind(this);

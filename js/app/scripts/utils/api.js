@@ -4,6 +4,7 @@
  * API functions
  * @module API
  */
+import _ from 'lodash';
 import { XHR, CSRF_HEADER_KEY } from 'constants/api';
 import cookie from 'cookie';
 
@@ -41,10 +42,9 @@ export default function request(action:Object = {}) {
 
   const headers = Object.assign({}, {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
-  }, action.headers);
+   }, action.headers);
 
-  if (['POST', 'PUT'].indexOf(action.method) >= 0) {
+  if (['POST', 'PUT', 'PATCH'].indexOf(action.method) >= 0) {
     const cookiesObj = cookie.parse(document.cookie);
     headers[CSRF_HEADER_KEY] = cookiesObj.csrftoken;
   }
@@ -56,7 +56,7 @@ export default function request(action:Object = {}) {
     };
 
     if (params.method !== 'GET') {
-      params.body = JSON.stringify(payload);
+      params.body = payload;
     }
 
     const endpoint = basePath + action.endpoint;

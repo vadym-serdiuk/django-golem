@@ -18,13 +18,13 @@ export default function createRoutes() {
   return (
     <Route path={basePath} component={App}>
       <Route component={AppPublic}>
-        <Route path={`${basePath}login/`} component={Login} />
+        <Route path="login" component={Login} />
       </Route>
       <Route component={AppPrivate}>
         <IndexRoute component={Main}/>
-        <Route path={`${basePath}:app/`} component={DjangoAppView}/>
-        <Route path={`${basePath}:app/:model/`} component={DjangoModelListView}/>
-        <Route path={`${basePath}:app/:model/:pk/`} component={DjangoModelDetailView} />
+        <Route path=":app/" component={DjangoAppView}/>
+        <Route path=":app/:model/" component={DjangoModelListView}/>
+        <Route path=":app/:model/:pk/" component={DjangoModelDetailView} />
       </Route>
       <Route path="*" component={NotFound} />
     </Route>

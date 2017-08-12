@@ -2,7 +2,8 @@ import { createReducer } from 'utils/helpers';
 import { ActionTypes } from 'constants/index';
 
 export const initialState = {
-  data: {},
+  objData: {},
+  listData: {},
   meta: {},
   appList: []
 };
@@ -14,42 +15,51 @@ export default {
     [ActionTypes.PUSH_MODEL_LIST_DATA](state, action) {
 
       const payload = [...action.payload];
-      // _.each(payload, (row) => {
-      //   _.each(_.keys(row), (field) => {
-      //     let value = row[field];
-      //     if (time_re.test(value))
-      //       row[field] = new Date(value);
-      //   });
-      // });
 
-      const data = {...state.data, [action.modelId]: payload};
-      return { ...state, data};
+      const listData = {
+        ...state.data,
+        [action.modelId]: payload,
+      };
+      return { ...state, listData};
     },
-    [ActionTypes.PUSH_MODEL_LIST_METADATA](state, action) {
+    [ActionTypes.PUSH_MODEL_OBJECT_DATA](state, action) {
+
+      const payload = {...action.payload};
+
+      const objData = {
+        ...state.data,
+        [action.modelId]: payload,
+      };
+      return { ...state, objData};
+    },
+    [ActionTypes.PUSH_MODEL_METADATA](state, action) {
       const meta = {
         ...state.meta,
         [action.modelId]: {
           ...state.meta[action.modelId],
           fields: action.payload.fields,
-          listFields: action.payload.list_fields,
+          listFields: action.payload.listFields,
+          layout: action.payload.layout,
+          fieldsets: action.payload.fieldsets,
         }
       };
       return { ...state, meta};
     },
     [ActionTypes.PUSH_INITIAL_DATA](state, action) {
-      const meta = {};
+      const meta = state.meta;
       _.each(action.payload.appList, (appObj, appName) => {
         _.each(appObj.models, (model) => {
-          meta[model.id] = {
-            name: model.name,
-            app: appName,
-            appLabel: appObj.name,
-            perms: model.perms,
-            listUrl: model.admin_url,
-            addUrl: model.add_url,
-            fields: [],
-            listFields: []
-          };
+          if (!(model.id in meta)) {
+            meta[model.id] = {
+              name: model.name,
+              app: appName,
+              appLabel: appObj.name,
+              perms: model.perms,
+              listUrl: model.admin_url,
+              addUrl: model.add_url,
+              listFields: []
+            };
+          }
         })
       });
       return {...state, appList: action.payload.appList, meta};

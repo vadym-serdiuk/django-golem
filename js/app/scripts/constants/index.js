@@ -26,8 +26,11 @@ export const ActionTypes = keyMirror({
   GET_MODEL_LIST_DATA: undefined,
   PUSH_MODEL_LIST_DATA: undefined,
 
-  GET_MODEL_LIST_METADATA: undefined,
-  PUSH_MODEL_LIST_METADATA: undefined,
+  GET_MODEL_METADATA: undefined,
+  PUSH_MODEL_METADATA: undefined,
+
+  GET_MODEL_OBJECT_DATA: undefined,
+  PUSH_MODEL_OBJECT_DATA: undefined,
 
   SAVE_NEW_OBJECT: undefined,
   SAVE_OBJECT: undefined,

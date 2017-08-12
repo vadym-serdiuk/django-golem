@@ -1,4 +1,3 @@
-import { REHYDRATE } from 'redux-persist/constants';
 import { createReducer } from 'utils/helpers';
 
 import { ActionTypes } from 'constants/index';

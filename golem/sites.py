@@ -148,7 +148,7 @@ class AdminSite(admin.AdminSite):
         for model, model_admin in admin.site._registry.items():
             info = (model._meta.app_label, model._meta.model_name)
             path = r'{}/{}'.format(*info)
-            model_id = '{}:{}'.format(*info)
+            # model_id = '{}:{}'.format(*info)
             viewset = get_viewset_class(model, model_admin)
             admin_api_router.register(path, viewset)
             # self.model_urls[model_id] = pa

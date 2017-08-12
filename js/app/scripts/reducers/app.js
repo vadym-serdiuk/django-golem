@@ -35,7 +35,6 @@ export default {
     },
 
     [LOCATION_CHANGE](state, params) {
-      console.log(params);
       return state;
     },
 

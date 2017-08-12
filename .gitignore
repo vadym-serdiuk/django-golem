@@ -13,4 +13,5 @@ js/test/
 npm-debug.log
 db.sqlite3
 **/__pycache__
+media/
 

@@ -1,25 +1,25 @@
 /*eslint-disable no-var, one-var, func-names, indent, prefer-arrow-callback, prefer-template, object-shorthand, no-console, newline-per-chained-call, one-var-declaration-per-line, vars-on-top */
-var path = require('path');
-var spawn = require('child_process').spawn;
-var spawnSync = require('child_process').spawnSync;
-var webpack = require('webpack');
-var merge = require('webpack-merge');
-var moment = require('moment');
-var WebpackDevServer = require('webpack-dev-server');
-var BrowserSyncPlugin = require('browser-sync-webpack-plugin');
-var webpackConfig = require('./webpack.config');
+const path = require('path');
+const spawn = require('child_process').spawn;
+const spawnSync = require('child_process').spawnSync;
+const webpack = require('webpack');
+const merge = require('webpack-merge');
+const moment = require('moment');
+const WebpackDevServer = require('webpack-dev-server');
+const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+const webpackConfig = require('./webpack.config');
 
-var args = process.argv.slice(2);
+const args = process.argv.slice(2);
 
 function getIPAddress() {
-  var interfaces = require('os').networkInterfaces();
+  const interfaces = require('os').networkInterfaces();
 
-  for (var devName in interfaces) {
+  for (let devName in interfaces) {
     if ({}.hasOwnProperty.call(interfaces, devName)) {
-      var iface = interfaces[devName];
+      const iface = interfaces[devName];
 
-      for (var i = 0; i < iface.length; i++) {
-        var alias = iface[i];
+      for (let i = 0; i < iface.length; i++) {
+        const alias = iface[i];
         if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
           return alias.address;
         }
@@ -30,7 +30,7 @@ function getIPAddress() {
   return '0.0.0.0';
 }
 
-var envPlugin;
+let envPlugin;
 
 if (args[0] && args[0] === 'test:ui') {
   envPlugin = new webpack.DefinePlugin({
@@ -48,7 +48,7 @@ if (args[0] && args[0] === 'test:ui') {
   });
 }
 
-var config = merge.smart(webpackConfig, {
+const config = merge.smart(webpackConfig, {
   cache: false,
   output: {
     path: path.join(__dirname, "build/"),
@@ -71,8 +71,8 @@ var config = merge.smart(webpackConfig, {
   ]
 });
 
-var compiler = webpack(config);
-var start;
+const compiler = webpack(config);
+let start;
 
 compiler.plugin('compile', function() {
   start = moment();
@@ -80,14 +80,14 @@ compiler.plugin('compile', function() {
 });
 
 compiler.plugin('emit', function(compilation, callback) {
-  var now = moment();
+  const now = moment();
   console.log('Duration: ' + now.diff(start, 's') + 's');
   console.log('Hash: ' + compilation.hash);
 
   if (args[0] && args[0] === 'test:ui') {
     spawnSync('pkill', ['-f', 'selenium']);
 
-    var nightwatch = spawn(path.join(__dirname, '../node_modules/.bin/nightwatch'), [
+    const nightwatch = spawn(path.join(__dirname, '../node_modules/.bin/nightwatch'), [
       '-c',
       path.join(__dirname, '../test/__setup__/nightwatch.conf.js')
     ]);
@@ -118,12 +118,13 @@ new WebpackDevServer(compiler, {
     'Access-Control-Allow-Origin': 'http://localhost:8000',
     'Access-Control-Allow-Credentials': 'true'
   },
-  proxy: {
-    '/admin': {
-      target: 'http://localhost:8000',
-      secure: false
-    }
-  }
+  openPage: '/admin/',
+  open: true,
+  proxy: [{
+    context: ["/admin", "/media"],
+    target: 'http://localhost:8000',
+    secure: false
+  }],
 }).listen(3030, 'localhost', function(err) {
   if (err) {
     console.log('err', err);

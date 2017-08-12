@@ -6,7 +6,7 @@
  */
 
 import { takeEvery } from 'redux-saga';
-import { put, call, fork } from 'redux-saga/effects';
+import { all, put, call, fork } from 'redux-saga/effects';
 
 import { goTo } from 'actions';
 import { ActionTypes } from 'constants/index';
@@ -19,7 +19,7 @@ export function* login(action) {
     const options = {
       endpoint: ENDPOINTS.login,
       method: 'POST',
-      payload: action.payload
+      payload: JSON.stringify(action.payload)
     };
     yield call(request, options);
 
@@ -63,20 +63,12 @@ export function* logout() {
   }
 }
 
-function* watchLogin() {
-  yield* takeEvery(ActionTypes.USER_LOGIN_REQUEST, login);
-}
-
-function* watchLogout() {
-  yield* takeEvery(ActionTypes.USER_LOGOUT_REQUEST, logout);
-}
-
 /**
  * Session Sagas
  */
 export default function* app() {
-  yield [
-    fork(watchLogin),
-    fork(watchLogout)
-  ];
+  yield all([
+    takeEvery(ActionTypes.USER_LOGIN_REQUEST, login),
+    takeEvery(ActionTypes.USER_LOGOUT_REQUEST, logout),
+  ]);
 }

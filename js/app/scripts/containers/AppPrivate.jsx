@@ -10,10 +10,6 @@ import { goTo, openSidebarMenu } from 'actions/app';
 
 export class AppPrivate extends React.Component {
 
-  constructor(props) {
-    super(props);
-  };
-
   componentWillMount = () => {
     if (this.props.user.authenticated === null)
       return;

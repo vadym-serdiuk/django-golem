@@ -11,8 +11,8 @@ export class Login extends React.Component {
     dispatch: React.PropTypes.func.isRequired
   };
 
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
 
     this.state = {
       username: '',

@@ -1,13 +1,14 @@
 /*eslint-disable no-var, one-var, func-names, indent, prefer-arrow-callback, object-shorthand, no-console, newline-per-chained-call, one-var-declaration-per-line, prefer-template, vars-on-top */
-var path = require('path');
-var webpack = require('webpack');
-var ExtractText = require('extract-text-webpack-plugin');
-var autoprefixer = require('autoprefixer');
+const path = require('path');
+const webpack = require('webpack');
+const ExtractText = require('extract-text-webpack-plugin');
+const WebpackNotifier = require( 'webpack-notifier' );
+const autoprefixer = require('autoprefixer');
 
-var isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === 'production';
 
-var cssLoaders = ['css?sourceMap', 'postcss?pack=custom', 'sass?sourceMap'];
-var config = {
+const cssLoaders = ['css?sourceMap', 'postcss?pack=custom', 'sass?sourceMap'];
+const config = {
   context: path.join(__dirname, '../app'),
   resolve: {
     alias: {
@@ -25,9 +26,9 @@ var config = {
     path: path.join(__dirname, '../dist'),
     filename: '[name].[hash].js'
   },
-  devtool: '#source-map',
+  devtool: isProd ? 'source-map' : 'cheap-module-inline-source-map',
   plugins: [
-    new webpack.NoErrorsPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.LoaderOptionsPlugin({
       options: {
         context: '/',
@@ -52,6 +53,11 @@ var config = {
           };
         }
       }
+    }),
+    new WebpackNotifier({
+        title: 'Golem JS',
+        alwaysNotify: true,
+        excludeWarnings: true,
     }),
   ],
   module: {
